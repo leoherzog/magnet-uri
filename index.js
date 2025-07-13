@@ -31,6 +31,25 @@ function magnetURIDecode (uri) {
     // Clean up torrent name
     if (key === 'dn') val = decodeURIComponent(val).replace(/\+/g, ' ')
 
+    // Normalize BitTorrent info hashes in xt parameter to prevent duplicates
+    if (key === 'xt') {
+      // Check for btih with 40-char hex hash
+      const btih40Match = val.match(/^(urn:btih:)([0-9a-fA-F]{40})$/i)
+      if (btih40Match) {
+        val = btih40Match[1] + btih40Match[2].toLowerCase()
+      }
+      // Check for btih with 32-char base32 hash
+      const btih32Match = val.match(/^(urn:btih:)([0-9a-zA-Z]{32})$/i)
+      if (btih32Match) {
+        val = btih32Match[1] + btih32Match[2].toUpperCase()
+      }
+      // Check for btmh (BitTorrent v2) with 64-char hex hash
+      const btmhMatch = val.match(/^(urn:btmh:1220)([0-9a-fA-F]{64})$/i)
+      if (btmhMatch) {
+        val = btmhMatch[1] + btmhMatch[2].toLowerCase()
+      }
+    }
+
     // Address tracker (tr), exact source (xs), and acceptable source (as) are encoded
     // URIs, so decode them
     if (key === 'tr' || key === 'xs' || key === 'as' || key === 'ws') {
